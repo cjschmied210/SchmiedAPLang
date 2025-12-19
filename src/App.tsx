@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import EntryAirlock from './components/layout/EntryAirlock';
 import Canvas from './components/reader/Canvas';
+import { LogicBoard } from './components/logic/LogicBoard';
+import { ViewToggle } from './components/layout/ViewToggle';
 
 // Sample Text: Queen Elizabeth I - Speech at Tilbury
 const ANCHOR_TEXT = `My loving people,
@@ -13,20 +15,28 @@ I know I have the body but of a weak and feeble woman; but I have the heart and 
 I know already, for your forwardness you have deserved rewards and crowns; and We do assure you on the word of a prince, they shall be duly paid you. In the mean time, my lieutenant general shall be in my stead, than whom never prince commanded a more noble or worthy subject; not doubting but by your obedience to my general, by your concord in the camp, and your valour in the field, we shall shortly have a famous victory over those enemies of my God, of my kingdom, and of my people.`;
 
 function App() {
+  const [viewMode, setViewMode] = useState<'READER' | 'LOGIC'>('READER');
+
   return (
     <div className="app-container">
-      {/* The Main Reader Area 
-        Wrapped in EntryAirlock to enforce context setting.
-      */}
-      <main className="main-reader" style={{ padding: 0 }}>
+      {/* The Main Area */}
+      <main className="main-reader relative" style={{ padding: 0 }}>
+
+        {/* Floating Toggle (Top Right) */}
+        <div className="absolute top-4 right-6 z-50">
+          <ViewToggle viewMode={viewMode} onToggle={setViewMode} />
+        </div>
+
         <EntryAirlock>
-          <Canvas text={ANCHOR_TEXT} textId="tilbury-1588" />
+          {viewMode === 'READER' ? (
+            <Canvas text={ANCHOR_TEXT} textId="tilbury-1588" />
+          ) : (
+            <LogicBoard />
+          )}
         </EntryAirlock>
       </main>
 
-      {/* The Thinking Sidebar
-        Always visible to the right
-      */}
+      {/* The Thinking Sidebar - Always visible */}
       <Sidebar />
     </div>
   );
