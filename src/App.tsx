@@ -5,6 +5,8 @@ import Canvas from './components/reader/Canvas';
 import { LogicBoard } from './components/logic/LogicBoard';
 import StyleDojo from './components/style/StyleDojo';
 import { ViewToggle } from './components/layout/ViewToggle';
+import TeacherDashboard from './components/dashboard/TeacherDashboard';
+import { GraduationCap, Users } from 'lucide-react';
 
 // Sample Text: Queen Elizabeth I - Speech at Tilbury
 const ANCHOR_TEXT = `My loving people,
@@ -17,9 +19,26 @@ I know already, for your forwardness you have deserved rewards and crowns; and W
 
 function App() {
   const [viewMode, setViewMode] = useState<'READER' | 'LOGIC' | 'STYLE'>('READER');
+  const [isTeacherMode, setIsTeacherMode] = useState(false);
+
+  if (isTeacherMode) {
+    return (
+      <div className="relative">
+        <TeacherDashboard />
+        {/* Return to Student Mode */}
+        <button
+          onClick={() => setIsTeacherMode(false)}
+          className="fixed bottom-4 right-4 bg-gray-900 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold z-50 hover:bg-gray-800 transition-colors"
+        >
+          <Users size={16} />
+          Student View
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="app-container">
+    <div className="app-container relative">
       {/* The Main Area */}
       <main className="main-reader relative" style={{ padding: 0 }}>
 
@@ -47,6 +66,15 @@ function App() {
 
       {/* The Thinking Sidebar - Always visible */}
       <Sidebar />
+
+      {/* Teacher Toggle */}
+      <button
+        onClick={() => setIsTeacherMode(true)}
+        className="fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold z-50 hover:bg-indigo-700 transition-colors"
+      >
+        <GraduationCap size={16} />
+        Teacher Mode
+      </button>
     </div>
   );
 }
