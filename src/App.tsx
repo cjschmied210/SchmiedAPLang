@@ -1,58 +1,32 @@
 import React from 'react';
 import { Sidebar } from './components/layout/Sidebar';
-import { useAppDispatch } from './app/hooks';
-import { createAnnotation } from './features/analysis/analysisSlice';
+import EntryAirlock from './components/layout/EntryAirlock';
+import Canvas from './components/reader/Canvas';
+
+// Sample Text: Queen Elizabeth I - Speech at Tilbury
+const ANCHOR_TEXT = `My loving people,
+
+We have been persuaded by some that are careful of our safety, to take heed how we commit ourselves to armed multitudes, for fear of treachery; but I assure you I do not desire to live to distrust my faithful and loving people. Let tyrants fear. I have always so behaved myself that, under God, I have placed my chiefest strength and safeguard in the loyal hearts and good-will of my subjects; and therefore I am come amongst you, as you see, at this time, not for my recreation and disport, but being resolved, in the midst and heat of the battle, to live and die amongst you all; to lay down for my God, and for my kingdom, and my people, my honour and my blood, even in the dust.
+
+I know I have the body but of a weak and feeble woman; but I have the heart and stomach of a king, and of a king of England too, and think foul scorn that Parma or Spain, or any prince of Europe, should dare to invade the borders of my realm; to which rather than any dishonour shall grow by me, I myself will take up arms, I myself will be your general, judge, and rewarder of every one of your virtues in the field.
+
+I know already, for your forwardness you have deserved rewards and crowns; and We do assure you on the word of a prince, they shall be duly paid you. In the mean time, my lieutenant general shall be in my stead, than whom never prince commanded a more noble or worthy subject; not doubting but by your obedience to my general, by your concord in the camp, and your valour in the field, we shall shortly have a famous victory over those enemies of my God, of my kingdom, and of my people.`;
 
 function App() {
-  const dispatch = useAppDispatch();
-
-  const handleSimulateHighlight = () => {
-    dispatch(createAnnotation({
-      textId: 'test-text-1',
-      start: 0,
-      end: 10,
-      text: 'Simulated highlighted text segment ' + Math.floor(Math.random() * 100),
-    }));
-  };
-
   return (
     <div className="app-container">
-      {/* Main Content Area (Reader) */}
-      <main className="main-reader">
-        <div className="reader-content">
-          <header style={{ marginBottom: '3rem' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--color-ink)' }}>RhetoricOS Prototype</h1>
-            <p style={{ fontSize: '1.125rem', color: 'var(--color-ink-light)', fontStyle: 'italic', fontFamily: 'var(--font-serif)' }}>
-              "To operationalize rhetorical analysis through a specialized reading interface."
-            </p>
-          </header>
-
-          <div style={{ lineHeight: 1.8, fontSize: '1.125rem', color: 'var(--color-ink)' }}>
-            <p style={{ marginBottom: '1.5rem' }}>
-              This is the <strong>Reader Interface</strong> placeholder. The text would go here.
-            </p>
-            <p style={{ marginBottom: '1.5rem' }}>
-              In the final version, selecting text here will trigger the creation of a card in the sidebar.
-            </p>
-
-            <div className="debug-panel">
-              <h3 style={{ fontSize: '0.875rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#94A3B8', marginBottom: '1rem' }}>Debug Controls</h3>
-              <button
-                onClick={handleSimulateHighlight}
-                className="btn-primary"
-              >
-                Simulate Text Highlight
-              </button>
-            </div>
-
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-          </div>
-        </div>
+      {/* The Main Reader Area 
+        Wrapped in EntryAirlock to enforce context setting.
+      */}
+      <main className="main-reader" style={{ padding: 0 }}>
+        <EntryAirlock>
+          <Canvas text={ANCHOR_TEXT} textId="tilbury-1588" />
+        </EntryAirlock>
       </main>
 
-      {/* The Thinking Sidebar */}
+      {/* The Thinking Sidebar
+        Always visible to the right
+      */}
       <Sidebar />
     </div>
   );
