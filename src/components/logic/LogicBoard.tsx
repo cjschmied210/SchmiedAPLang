@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { addNode, updateNodeContent, deleteNode } from '../../features/argument/argumentSlice';
-import { Plus, Trash2 } from 'lucide-react';
+import { addNode, updateNodeContent, deleteNode, ArgumentNode } from '../../features/argument/argumentSlice';
+import { Plus, Trash2, Download, Copy, Check } from 'lucide-react';
 
 const NodeCard: React.FC<{ nodeId: string }> = ({ nodeId }) => {
     const dispatch = useDispatch();
@@ -91,13 +91,8 @@ const NodeCard: React.FC<{ nodeId: string }> = ({ nodeId }) => {
                         {/* The horizontal bar that sits above the children */}
                         {node.children.length > 1 && (
                             <div className="absolute -top-px left-0 right-0 h-px bg-gray-300 mx-[9rem]" />
-                            // 9rem is roughly half the card width (w-72 = 18rem). This ensures the line starts/ends at centers.
-                            // However, flex gap makes this calc tricky.
-                            // Easier: Use the pseudo-element tree approach or just accept simple disjointed lines.
-                            // Let's rely on the CSS tree trick wrapper.
                         )}
 
-                        {/* Actually, let's use the CSS Tree structure wrapper here, it's cleaner than manual divs */}
                         {node.children.map((childId, index) => (
                             <div key={childId} className="relative flex flex-col items-center pt-8">
                                 {/* Connector Lines Logic for this specific child relative to siblings */}
@@ -117,8 +112,6 @@ const NodeCard: React.FC<{ nodeId: string }> = ({ nodeId }) => {
                                         )}
                                     </>
                                 )}
-                                {/* Single child doesn't need horizontal bars, just the vertical line from parent (rendered above) connects to... Wait, parent rendered 1 vertical line. */}
-                                {/* If single child, parent vertical line connects directly. If multiple, parent connects to horizontal bar. */}
 
                                 <NodeCard nodeId={childId} />
                             </div>
@@ -132,9 +125,50 @@ const NodeCard: React.FC<{ nodeId: string }> = ({ nodeId }) => {
 
 export const LogicBoard: React.FC = () => {
     const rootId = useSelector((state: RootState) => state.argument.rootId);
+    const nodes = useSelector((state: RootState) => state.argument.nodes);
+    const [copied, setCopied] = useState(false);
+
+    const generateOutline = (nodeId: string): string => {
+        const node = nodes[nodeId];
+        if (!node) return '';
+
+        let output = '';
+
+        if (node.type === 'THESIS') {
+            output += `Thesis: ${node.content}\n\n`;
+        } else if (node.type === 'CLAIM') {
+            output += `Body Paragraph: ${node.content}\n`;
+        } else if (node.type === 'EVIDENCE') {
+            output += `  - Evidence: ${node.content}\n`;
+        }
+
+        node.children.forEach(childId => {
+            output += generateOutline(childId);
+        });
+
+        return output;
+    };
+
+    const handleExport = () => {
+        const outline = generateOutline(rootId);
+        navigator.clipboard.writeText(outline);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
-        <div className="w-full h-full overflow-auto bg-[#F8FAFC] p-12 custom-scrollbar">
+        <div className="w-full h-full overflow-auto bg-[#F8FAFC] p-12 custom-scrollbar relative">
+            {/* Export Button */}
+            <div className="fixed top-24 right-8 z-50">
+                <button
+                    onClick={handleExport}
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 font-bold text-sm rounded-lg shadow-md border border-indigo-100 hover:bg-indigo-50 transition-all"
+                >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                    {copied ? 'Copied to Clipboard' : 'Export Outline'}
+                </button>
+            </div>
+
             {/* Dot Grid Background */}
             <div className="fixed inset-0 z-0 opacity-40 pointer-events-none"
                 style={{
