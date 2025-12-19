@@ -7,25 +7,27 @@
   --color-paper-dark: #F2EFE9;
   --color-ink: #1E293B;
   --color-ink-light: #64748B;
-  
-  --color-brand: #4F46E5; /* Indigo 600 */
+
+  --color-brand: #4F46E5;
+  /* Indigo 600 */
   --color-brand-light: #818CF8;
   --color-brand-faint: #EEF2FF;
-  
-  --color-accent: #D97706; /* Amber 600 */
+
+  --color-accent: #D97706;
+  /* Amber 600 */
   --color-danger: #EF4444;
-  
+
   /* Typography */
   --font-serif: 'Crimson Pro', serif;
   --font-sans: 'Inter', sans-serif;
-  
+
   /* Spacing */
   --space-xs: 0.5rem;
   --space-sm: 1rem;
   --space-md: 1.5rem;
   --space-lg: 2rem;
   --space-xl: 3rem;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
@@ -39,13 +41,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   font-weight: 600;
   margin-top: 0;
 }
 
-input, textarea, button {
+input,
+textarea,
+button {
   font-family: inherit;
 }
 
@@ -81,7 +90,8 @@ input, textarea, button {
 
 /* Components from Tailwind Shim (Replacements) */
 .sidebar {
-  width: 400px; /* Fixed width as per sidebar specifiction implies persistence */
+  width: 400px;
+  /* Fixed width as per sidebar specifiction implies persistence */
   background-color: white;
   border-left: 1px solid #E2E8F0;
   display: flex;
@@ -115,7 +125,7 @@ input, textarea, button {
   flex: 1;
   overflow-y: auto;
   padding: var(--space-sm);
-  background-color: #F8FAFC; 
+  background-color: #F8FAFC;
 }
 
 .empty-state {
@@ -178,7 +188,10 @@ input, textarea, button {
   color: #94A3B8;
   padding: 4px;
 }
-.delete-btn:hover { color: var(--color-danger); }
+
+.delete-btn:hover {
+  color: var(--color-danger);
+}
 
 .card-body {
   padding: var(--space-sm);
@@ -263,6 +276,27 @@ input, textarea, button {
   cursor: pointer;
   box-shadow: var(--shadow-sm);
 }
+
 .btn-primary:hover {
-  background-color: #4338CA; 
+  background-color: #4338CA;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
 }
