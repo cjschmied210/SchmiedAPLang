@@ -1,0 +1,120 @@
+scalar Date
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  skillTree: SkillTree!
+  readings: [UserReadingProgress!]!
+}
+
+type SkillTree {
+  id: ID!
+  analysisScore: Int!
+  argumentationScore: Int!
+  styleScore: Int!
+  masteredSkills: [String!]!
+}
+
+type Text {
+  id: ID!
+  title: String!
+  author: String!
+  content: String!
+  wordCount: Int!
+  genre: Genre!
+  defaultTags: [RhetoricalTag!]!
+}
+
+enum Genre {
+  SPEECH
+  LETTER
+  OP_ED
+  ESSAY
+}
+
+type RhetoricalTag {
+  id: ID!
+  name: String!
+  description: String
+}
+
+type UserReadingProgress {
+  id: ID!
+  user: User!
+  text: Text!
+  timeSpentSeconds: Int!
+  revisionsMade: Int!
+  completed: Boolean!
+  annotations: [Annotation!]!
+  context: RhetoricalContext
+}
+
+type RhetoricalContext {
+  speaker: String
+  audience: String
+  exigence: String
+  known: String
+  wanted: String
+}
+
+type Annotation {
+  id: ID!
+  textId: ID!
+  anchorStart: Int!
+  anchorEnd: Int!
+  selectedText: String!
+  content: String!
+  verb: RhetoricalVerb
+  templateData: SpacecatData
+  createdAt: Date!
+}
+
+type RhetoricalVerb {
+  category: VerbCategory!
+  verb: String!
+}
+
+enum VerbCategory {
+  EMPHASIZE
+  CONTRAST
+  ARGUE
+}
+
+type SpacecatData {
+  speaker: String
+  purpose: String
+  audience: String
+  context: String
+  exigence: String
+  choices: String
+  appeals: String
+  tone: String
+}
+
+type Query {
+  user(id: ID!): User
+  texts: [Text!]!
+  text(id: ID!): Text
+}
+
+type Mutation {
+  createAnnotation(
+    textId: ID!
+    anchorStart: Int!
+    anchorEnd: Int!
+    selectedText: String!
+    content: String!
+    verbCategory: VerbCategory
+    verb: String
+  ): Annotation
+  
+  updateContext(
+    readingId: ID!
+    speaker: String
+    audience: String
+    exigence: String
+  ): UserReadingProgress
+
+  startReading(textId: ID!): UserReadingProgress
+}

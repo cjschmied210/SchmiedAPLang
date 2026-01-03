@@ -1,0 +1,7 @@
+console.log('Minimal Main Executing');
+const root = document.getElementById('root');
+if (root) {
+  root.innerHTML = '<div style="color: red; font-size: 2em; padding: 20px;">Vanilla JS Working</div>';
+} else {
+  console.error('Root element not found');
+}
