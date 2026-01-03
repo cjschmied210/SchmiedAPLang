@@ -1,9 +1,11 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux'; // Added useSelector
 import { createAnnotation } from '../../features/analysis/analysisSlice';
+import type { RootState } from '../../store'; // Added type
 import SpeedBump from './SpeedBump';
 
-const CHARS_PER_PAGE = 3500;
+// FIX 1: Lower this from 3500 to 500 so you can actually see pagination & speed bumps
+const CHARS_PER_PAGE = 500;
 
 interface CanvasProps {
     text: string;
@@ -12,11 +14,15 @@ interface CanvasProps {
 
 const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
     const dispatch = useDispatch();
+    // FIX 2: Subscribe to annotations so we can render them
+    const annotations = useSelector((state: RootState) =>
+        state.analysis.annotations.filter(a => a.textId === textId)
+    );
+
     const contentRef = useRef<HTMLDivElement>(null);
     const [pageIndex, setPageIndex] = useState(0);
     const [unlockedPages, setUnlockedPages] = useState<Set<number>>(new Set());
 
-    // Clean text pagination logic
     const pages = useMemo(() => {
         if (!text) return [];
         const result: string[] = [];
@@ -47,8 +53,6 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
         return offset;
     }, [pages, pageIndex]);
 
-    // Locking Logic: Lock every even page > 0 (Page 2, 4, 6...) unless unlocked
-    // This implements "Speed bump after every 2nd page" (Reads 0, 1 -> BUMP -> 2, 3 -> BUMP)
     const isLocked = (pageIndex > 0 && pageIndex % 2 === 0) && !unlockedPages.has(pageIndex);
 
     const handleUnlock = () => {
@@ -56,7 +60,7 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
     };
 
     const handleSelection = () => {
-        if (isLocked) return; // Prevent selection on locked pages
+        if (isLocked) return;
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
 
@@ -64,12 +68,15 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
         const container = contentRef.current;
         if (!container || !container.contains(range.commonAncestorContainer)) return;
 
+        // Calculate offset relative to the current page
         const preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(container);
         preCaretRange.setEnd(range.startContainer, range.startOffset);
 
         const relativeStart = preCaretRange.toString().length;
         const selectedText = selection.toString();
+
+        // Add page offset to get global text coordinates
         const globalStart = pageStartOffset + relativeStart;
         const globalEnd = globalStart + selectedText.length;
 
@@ -79,6 +86,65 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
             end: globalEnd,
             text: selectedText,
         }));
+
+        // Clear native selection so custom highlight takes over
+        selection.removeAllRanges();
+    };
+
+    // FIX 3: New function to "paint" the text with <mark> tags
+    const renderPageContent = () => {
+        const pageText = pages[pageIndex] || "";
+        const pageEndOffset = pageStartOffset + pageText.length;
+
+        // Find annotations that overlap with this current page
+        const relevantAnnotations = annotations.filter(a =>
+            a.anchorStart < pageEndOffset && a.anchorEnd > pageStartOffset
+        ).sort((a, b) => a.anchorStart - b.anchorStart);
+
+        if (relevantAnnotations.length === 0) return pageText;
+
+        const elements = [];
+        let cursor = pageStartOffset;
+
+        relevantAnnotations.forEach(ann => {
+            // Clip annotation range to the current page boundaries
+            const start = Math.max(cursor, ann.anchorStart);
+            const end = Math.min(pageEndOffset, ann.anchorEnd);
+
+            if (start < end) {
+                // 1. Text before highlight
+                if (start > cursor) {
+                    elements.push(
+                        <span key={`text-${cursor}`}>
+                            {text.slice(cursor - pageStartOffset, start - pageStartOffset)}
+                        </span>
+                    );
+                }
+
+                // 2. The Highlighted Text
+                elements.push(
+                    <mark
+                        key={ann.id}
+                        className="bg-indigo-100 border-b-2 border-indigo-400 text-indigo-900 cursor-pointer hover:bg-indigo-200 transition-colors rounded-sm px-0.5"
+                    >
+                        {text.slice(start - pageStartOffset, end - pageStartOffset)}
+                    </mark>
+                );
+
+                cursor = end;
+            }
+        });
+
+        // 3. Remaining text after last highlight
+        if (cursor < pageEndOffset) {
+            elements.push(
+                <span key={`text-${cursor}`}>
+                    {text.slice(cursor - pageStartOffset, pageEndOffset - pageStartOffset)}
+                </span>
+            );
+        }
+
+        return elements;
     };
 
     const scrollToTop = () => {
@@ -104,7 +170,7 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
     return (
         <div style={{
             width: '100%',
-            maxWidth: '48rem', // max-w-3xl
+            maxWidth: '48rem',
             margin: '0 auto',
             padding: '3rem 1.5rem',
             minHeight: '80vh',
@@ -119,16 +185,17 @@ const Canvas: React.FC<CanvasProps> = ({ text, textId = 'default-text' }) => {
                 style={{
                     flex: 1,
                     fontFamily: '"Merriweather", "Georgia", serif',
-                    fontSize: '1.25rem', // text-xl
-                    lineHeight: '2', // leading-loose
-                    color: '#111827', // text-gray-900
+                    fontSize: '1.25rem',
+                    lineHeight: '2',
+                    color: '#111827',
                     whiteSpace: 'pre-wrap',
                     marginBottom: '3rem',
                     cursor: 'text',
                     userSelect: 'text'
                 }}
             >
-                {pages[pageIndex]}
+                {/* Use the new renderer instead of raw string */}
+                {renderPageContent()}
             </div>
 
             {/* Speed Bump Overlay */}
