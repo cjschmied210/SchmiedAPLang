@@ -7,12 +7,21 @@ export const Sidebar: React.FC = () => {
     const { annotations, activeAnnotationId } = useAppSelector((state) => state.analysis);
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Auto-scroll to active card
+    // FIX: Auto-scroll to active card
     useEffect(() => {
         if (activeAnnotationId && scrollRef.current) {
-            // Implementation pending
+            // Find the active card DOM element within the sidebar
+            // The RhetoricalCard component adds the '.active' class when selected
+            const activeCard = scrollRef.current.querySelector('.rhetorical-card.active');
+
+            if (activeCard) {
+                activeCard.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
         }
-    }, [activeAnnotationId]);
+    }, [activeAnnotationId, annotations.length]); // Re-run when selection changes or new items added
 
     return (
         <aside className="sidebar">
